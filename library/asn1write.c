@@ -23,7 +23,7 @@
 
 #include "mbedtls/asn1write.h"
 #include "mbedtls/error.h"
-#include "mbedtls/pk.h"
+#include "mbedtls/oid.h"
 
 #include <string.h>
 
@@ -189,15 +189,23 @@ int mbedtls_asn1_write_oid( unsigned char **p, const unsigned char *start,
     return( (int) len );
 }
 
-int mbedtls_asn1_write_algorithm_identifier_rfc_conform( unsigned char **p, const unsigned char *start,
+int mbedtls_asn1_write_algorithm_identifier( unsigned char **p, const unsigned char *start,
                                      const char *oid, size_t oid_len,
-                                     size_t par_len, mbedtls_pk_type_t pk_type )
+                                     size_t par_len )
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
     if( par_len == 0 ) {
-        if (pk_type != MBEDTLS_PK_ECDSA)
+        // check if the OID is equal to one of the four ECDSA algorithm identifiers. If so, omit the NULL to conform to
+        // RFC 5758
+        if (oid_len == sizeof(MBEDTLS_OID_ECDSA_SHA256) - 1 &&
+            memcmp(oid, MBEDTLS_OID_ECDSA_SHA224, sizeof(MBEDTLS_OID_ECDSA_SHA256) - 2) == 0&&
+            (oid[sizeof(MBEDTLS_OID_ECDSA_SHA224)-2] == 0x01 || oid[sizeof(MBEDTLS_OID_ECDSA_SHA224)-2] == 0x02 ||
+             oid[sizeof(MBEDTLS_OID_ECDSA_SHA224)-2] == 0x03 || oid[sizeof(MBEDTLS_OID_ECDSA_SHA224)-2] == 0x03)
+                ) {
+            // skip writing NULL
+        } else
             MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_null(p, start));
     } else
         len += par_len;
@@ -209,12 +217,6 @@ int mbedtls_asn1_write_algorithm_identifier_rfc_conform( unsigned char **p, cons
                                        MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE ) );
 
     return( (int) len );
-}
-
-int mbedtls_asn1_write_algorithm_identifier( unsigned char **p, const unsigned char *start,
-                                                         const char *oid, size_t oid_len,
-                                                         size_t par_len) {
-    return mbedtls_asn1_write_algorithm_identifier_rfc_conform(p, start, oid, oid_len, par_len, MBEDTLS_PK_NONE);
 }
 
 int mbedtls_asn1_write_bool( unsigned char **p, const unsigned char *start, int boolean )
