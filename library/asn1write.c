@@ -23,6 +23,7 @@
 
 #include "mbedtls/asn1write.h"
 #include "mbedtls/error.h"
+#include "mbedtls/pk.h"
 
 #include <string.h>
 
@@ -188,16 +189,17 @@ int mbedtls_asn1_write_oid( unsigned char **p, const unsigned char *start,
     return( (int) len );
 }
 
-int mbedtls_asn1_write_algorithm_identifier( unsigned char **p, const unsigned char *start,
+int mbedtls_asn1_write_algorithm_identifier_rfc_conform( unsigned char **p, const unsigned char *start,
                                      const char *oid, size_t oid_len,
-                                     size_t par_len )
+                                     size_t par_len, mbedtls_pk_type_t pk_type )
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t len = 0;
 
-    if( par_len == 0 )
-        MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_null( p, start ) );
-    else
+    if( par_len == 0 ) {
+        if (pk_type != MBEDTLS_PK_ECDSA)
+            MBEDTLS_ASN1_CHK_ADD(len, mbedtls_asn1_write_null(p, start));
+    } else
         len += par_len;
 
     MBEDTLS_ASN1_CHK_ADD( len, mbedtls_asn1_write_oid( p, start, oid, oid_len ) );
@@ -207,6 +209,12 @@ int mbedtls_asn1_write_algorithm_identifier( unsigned char **p, const unsigned c
                                        MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE ) );
 
     return( (int) len );
+}
+
+int mbedtls_asn1_write_algorithm_identifier( unsigned char **p, const unsigned char *start,
+                                                         const char *oid, size_t oid_len,
+                                                         size_t par_len) {
+    return mbedtls_asn1_write_algorithm_identifier_rfc_conform(p, start, oid, oid_len, par_len, MBEDTLS_PK_NONE);
 }
 
 int mbedtls_asn1_write_bool( unsigned char **p, const unsigned char *start, int boolean )

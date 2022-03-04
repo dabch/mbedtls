@@ -25,6 +25,7 @@
 #include "mbedtls/build_info.h"
 
 #include "mbedtls/asn1.h"
+#include "pk.h"
 
 #define MBEDTLS_ASN1_CHK_ADD(g, f)                      \
     do                                                  \
@@ -135,7 +136,8 @@ int mbedtls_asn1_write_oid( unsigned char **p, const unsigned char *start,
                             const char *oid, size_t oid_len );
 
 /**
- * \brief           Write an AlgorithmIdentifier sequence in ASN.1 format.
+ * \brief           Write an AlgorithmIdentifier sequence in ASN.1 format, always writing writing NULL for algorithm
+ *                  parameters if par_len is 0
  *
  * \note            This function works backwards in data buffer.
  *
@@ -153,6 +155,28 @@ int mbedtls_asn1_write_algorithm_identifier( unsigned char **p,
                                              const unsigned char *start,
                                              const char *oid, size_t oid_len,
                                              size_t par_len );
+
+/**
+ * \brief           Write an AlgorithmIdentifier sequence in ASN.1 format, conforming to RFC 5758 requirements. Omits
+ *                  the NULL for algorithm parameters if pk_type is ECDSA
+ *
+ * \note            This function works backwards in data buffer.
+ *
+ * \param p         The reference to the current position pointer.
+ * \param start     The start of the buffer, for bounds-checking.
+ * \param oid       The OID of the algorithm to write.
+ * \param oid_len   The length of the algorithm's OID.
+ * \param par_len   The length of the parameters, which must be already written.
+ *                  If 0, NULL parameters are added
+ *
+ * \return          The number of bytes written to \p p on success.
+ * \return          A negative \c MBEDTLS_ERR_ASN1_XXX error code on failure.
+ */
+int mbedtls_asn1_write_algorithm_identifier_rfc_conform( unsigned char **p,
+                                                         const unsigned char *start,
+                                                         const char *oid, size_t oid_len,
+                                                         size_t par_len,
+                                                         mbedtls_pk_type_t pk_type );
 
 /**
  * \brief           Write a boolean tag (#MBEDTLS_ASN1_BOOLEAN) and value
