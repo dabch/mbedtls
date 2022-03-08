@@ -90,6 +90,10 @@ Certificate write check Server1 SHA1, RSA_ALT, CA
 depends_on:MBEDTLS_SHA1_C:MBEDTLS_RSA_C:MBEDTLS_PKCS1_V15:MBEDTLS_DES_C:MBEDTLS_CIPHER_MODE_CBC:MBEDTLS_MD5_C
 x509_crt_check:"data_files/server1.key":"":"C=NL,O=PolarSSL,CN=PolarSSL Server 1":"data_files/test-ca.key":"PolarSSLTest":"C=NL,O=PolarSSL,CN=PolarSSL Test CA":"1":"20190210144406":"20290210144406":MBEDTLS_MD_SHA1:0:0:0:0:0:-1:"data_files/server1.ca_noauthid.crt":1:1
 
+Certificate write check Server1 EC
+depends_on:MBEDTLS_SHA256_C:MBEDTLS_ECDSA_C:MBEDTLS_PKCS1_V15:MBEDTLS_DES_C:MBEDTLS_CIPHER_MODE_CBC
+x509_crt_check:"data_files/server5.key":"":"C=NL,O=PolarSSL,CN=PolarSSL Server 1":"data_files/test-ca2.key":"":"C=NL,O=PolarSSL,CN=PolarSSL Test CA":"1":"20190210144406":"20290210144406":MBEDTLS_MD_SHA256:0:0:0:0:1:-1:"data_files/server5.crt":0:0
+
 
 X509 String to Names #1
 mbedtls_x509_string_to_names:"C=NL,O=Offspark\, Inc., OU=PolarSSL":"C=NL, O=Offspark, Inc., OU=PolarSSL":0
